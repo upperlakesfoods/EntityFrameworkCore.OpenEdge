@@ -35,7 +35,9 @@ namespace EntityFrameworkCore.OpenEdge.Scaffolding.Internal
 
         public DatabaseModel Create(DbConnection connection, IEnumerable<string> tables, IEnumerable<string> schemas)
         {
-            _tables = tables;
+            var tableNames = tables as string[] ?? tables.ToArray();
+            _tables = tableNames;
+            
             var databaseModel = new DatabaseModel();
 
             var connectionStartedOpen = connection.State == ConnectionState.Open;
@@ -48,7 +50,14 @@ namespace EntityFrameworkCore.OpenEdge.Scaffolding.Internal
             {
                 databaseModel.DefaultSchema = DatabaseModelDefaultSchema;
 
-                GetTables(connection, FilterTables, databaseModel);
+                if (tableNames.Any())
+                {
+                    GetTables(connection, FilterTables, databaseModel);
+                }
+                else
+                {
+                    GetTables(connection, null, databaseModel);
+                }
 
                 return databaseModel;
             }
@@ -64,9 +73,7 @@ namespace EntityFrameworkCore.OpenEdge.Scaffolding.Internal
         private string FilterTables(string tableName)
         {
             var list = ("('" + string.Join("', '", _tables) + "')");
-
-            var q = $"{tableName} IN {list}";
-            return q;
+            return $"{tableName} IN {list}";
         }
 
         private void GetTables(
