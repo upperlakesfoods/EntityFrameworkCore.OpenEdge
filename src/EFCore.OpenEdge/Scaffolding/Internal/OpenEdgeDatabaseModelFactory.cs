@@ -18,6 +18,7 @@ namespace EntityFrameworkCore.OpenEdge.Scaffolding.Internal
     {
         protected internal const string DatabaseModelDefaultSchema = "pub";
         private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
+        private IEnumerable<string> _tables;
 
         public OpenEdgeDatabaseModelFactory(IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
         {
@@ -34,6 +35,7 @@ namespace EntityFrameworkCore.OpenEdge.Scaffolding.Internal
 
         public DatabaseModel Create(DbConnection connection, IEnumerable<string> tables, IEnumerable<string> schemas)
         {
+            _tables = tables;
             var databaseModel = new DatabaseModel();
 
             var connectionStartedOpen = connection.State == ConnectionState.Open;
@@ -46,7 +48,7 @@ namespace EntityFrameworkCore.OpenEdge.Scaffolding.Internal
             {
                 databaseModel.DefaultSchema = DatabaseModelDefaultSchema;
 
-                GetTables(connection, null, databaseModel);
+                GetTables(connection, FilterTables, databaseModel);
 
                 return databaseModel;
             }
@@ -57,6 +59,14 @@ namespace EntityFrameworkCore.OpenEdge.Scaffolding.Internal
                     connection.Close();
                 }
             }
+        }
+
+        private string FilterTables(string tableName)
+        {
+            var list = ("('" + string.Join("', '", _tables) + "')");
+
+            var q = $"{tableName} IN {list}";
+            return q;
         }
 
         private void GetTables(
