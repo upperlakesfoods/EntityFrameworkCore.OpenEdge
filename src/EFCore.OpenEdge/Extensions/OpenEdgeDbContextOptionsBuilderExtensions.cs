@@ -3,7 +3,7 @@ using EntityFrameworkCore.OpenEdge.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Microsoft.EntityFrameworkCore
+namespace EntityFrameworkCore.OpenEdge.Extensions
 {
     public static class OpenEdgeDbContextOptionsBuilderExtensions
     {
